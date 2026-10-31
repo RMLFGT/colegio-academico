@@ -1,0 +1,63 @@
+services:
+  - type: web
+    name: generacion-manana-taller
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./deploy/render/Dockerfile
+    dockerContext: .
+    healthCheckPath: /up
+    autoDeployTrigger: "off"
+    envVars:
+      - key: APP_NAME
+        value: La Generación del Mañana
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_LOCALE
+        value: es
+      - key: APP_FALLBACK_LOCALE
+        value: en
+      - key: APP_TIMEZONE
+        value: UTC
+      - key: SCHOOL_TIMEZONE
+        value: America/Guatemala
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: generacion-manana-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: MAIL_MAILER
+        value: log
+      - key: PRESENTATION_DATA
+        value: "true"
+      - key: PRESENTATION_PASSWORD
+        sync: false
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_EMAIL
+        value: admin@colegio.test
+      - key: ADMIN_PASSWORD
+        sync: false
+
+databases:
+  - name: generacion-manana-db
+    plan: free
+    region: virginia
+    databaseName: colegio
+    user: colegio
+    ipAllowList: []

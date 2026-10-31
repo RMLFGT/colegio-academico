@@ -12,13 +12,17 @@ class AcademicDataSeeder extends Seeder
 {
     public function run(): void
     {
-        if (!app()->environment('local')) {
-            throw new RuntimeException('Los datos de presentación solo se permiten en el entorno local.');
+        if (!app()->environment('local') && !config('academic.presentation_data')) {
+            throw new RuntimeException('Habilite explícitamente PRESENTATION_DATA para cargar datos ficticios fuera del entorno local.');
         }
 
         DB::transaction(function () {
             $timestamp = now();
-            $password = Hash::make('Colegio2026!');
+            $plainPassword = config('academic.presentation_password') ?: (app()->environment('local') ? 'Colegio2026!' : null);
+            if (!$plainPassword || (!app()->environment('local') && strlen($plainPassword) < 12)) {
+                throw new RuntimeException('Configure PRESENTATION_PASSWORD con al menos 12 caracteres.');
+            }
+            $password = Hash::make($plainPassword);
             // Existing rows are preserved, including passwords and manually edited records.
             $record = function (string $table, array $key, array $values) use ($timestamp): int {
                 $existing = DB::table($table)->where($key)->value('id');
@@ -119,6 +123,6 @@ class AcademicDataSeeder extends Seeder
                 }
             }
         });
-        $this->command?->info('Datos institucionales cargados. Contraseña inicial: Colegio2026!');
+        $this->command?->info('Datos ficticios de presentación cargados; cuentas existentes conservadas.');
     }
 }
